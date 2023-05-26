@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Core" Version="1.32.0" />
+    <PackageReference Include="Azure.Identity" Version="1.9.0" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.16.0" />
+    <PackageReference Include="Azure.Storage.Common" Version="12.15.0" />
+    <PackageReference Include="Azure.Storage.Queues" Version="12.14.0" />
+    <PackageReference Include="FileTypeChecker" Version="1.0.0" />
+    <PackageReference Include="Ghostscript.NET" Version="1.2.3" />
+    <PackageReference Include="itext7" Version="8.0.0" />
+    <PackageReference Include="iTextSharp" Version="5.5.13.3" />
+    <PackageReference Include="iTextSharp.LGPLv2.Core" Version="3.4.2" />
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.1.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.5">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
+    <PackageReference Include="Pdf2Image" Version="2.0.0" />
+    <PackageReference Include="PDFium.x64" Version="4648.0.0" />
+    <PackageReference Include="PDFiumCore" Version="115.0.5758" />
+    <PackageReference Include="PDFiumSharp" Version="1.4660.0-alpha1" />
+    <PackageReference Include="PdfiumViewer" Version="2.13.0" />
+    <PackageReference Include="PdfiumViewer.Native.x86.v8-xfa" Version="2018.4.8.256" />
+    <PackageReference Include="PdfiumViewer.Native.x86_64.v8-xfa" Version="2018.4.8.256" />
+    <PackageReference Include="PDFsharp" Version="6.0.0-preview-2" />
+    <PackageReference Include="PdfSharpCore" Version="1.3.56" />
+    <PackageReference Include="Select.Pdf" Version="23.1.0-dev2" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta15" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="../build/DocumentLibrary2.props" />
+</Project>
