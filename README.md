@@ -3,7 +3,17 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
+  <a href="https://github.com/rmoise/document-management-api">
+    <img src="img/logo-readme.png" alt="Logo" width="80" height="80">
+  </a>
+
   <h1 align="center">Document Management API - Technical Case Study</h1>
+
+  <p align="center">
+    <a href="https://github.com/rmoise/document-management-api/issues">Report Bug</a>
+    ·
+    <a href="https://github.com/rmoise/document-management-api/issues">Request Feature</a>
+  </p>
 </div>
 
 <!-- TABLE OF CONTENTS -->
@@ -26,6 +36,8 @@
 </details>
 
 <h2 id="objective">Objective</h2>
+
+![product-screenshot]
 
 <p>
   To build a backend API for a Document Management App with a frontend using React and Tailwind CSS. The API will handle document upload, retrieval, deletion, preview, download, and sharing functionalities.
@@ -121,3 +133,4 @@ To run the Document Management API locally, follow these steps:
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+[product-screenshot]: img/document-management-api-screenshot.png
