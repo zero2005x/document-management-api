@@ -9,6 +9,9 @@ using DocumentManagementApp.Repositories;
 
 namespace DocumentManagementApp.Controllers
 {
+    /// <summary>
+    /// Controller for managing documents.
+    /// </summary>
     [ApiController]
     [Route("api/documents")]
     public class DocumentsController : ControllerBase
@@ -18,6 +21,13 @@ namespace DocumentManagementApp.Controllers
         private readonly DocumentRepository _documentRepository;
         private readonly SASTokenGenerator _sasTokenGenerator;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DocumentsController"/> class.
+        /// </summary>
+        /// <param name="documentService">The document service.</param>
+        /// <param name="blobStorageService">The blob storage service.</param>
+        /// <param name="documentRepository">The document repository.</param>
+        /// <param name="sasTokenGenerator">The SAS token generator.</param>
         public DocumentsController(DocumentService documentService, IAzureBlobStorageService blobStorageService, DocumentRepository documentRepository, SASTokenGenerator sasTokenGenerator)
         {
             _documentService = documentService;
@@ -27,7 +37,13 @@ namespace DocumentManagementApp.Controllers
         }
 
         // GET api/documents
+        /// <summary>
+        /// Retrieves all documents.
+        /// </summary>
+        /// <returns>A list of documents.</returns>
         [HttpGet]
+
+
         public IActionResult GetDocuments()
         {
             var documents = _documentService.GetDocuments();
@@ -35,7 +51,14 @@ namespace DocumentManagementApp.Controllers
         }
 
         // POST api/documents/upload
+        /// <summary>
+        /// Uploads a document.
+        /// </summary>
+        /// <param name="file">The file to upload.</param>
+        /// <param name="name">The name of the document.</param>
+        /// <returns>An IActionResult indicating the result of the upload operation.</returns>
         [HttpPost("upload")]
+
         public async Task<IActionResult> UploadDocument([FromForm] IFormFile file, [FromForm] string name)
         {
             try
@@ -56,6 +79,11 @@ namespace DocumentManagementApp.Controllers
         }
 
         // DELETE api/documents/{id}
+        /// <summary>
+        /// Deletes a document by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the document to delete.</param>
+        /// <returns>An IActionResult indicating the result of the delete operation.</returns>
         [HttpDelete("{id}")]
         public IActionResult DeleteDocument(int id)
         {
@@ -64,6 +92,11 @@ namespace DocumentManagementApp.Controllers
         }
 
         // GET api/documents/{id}/preview
+        /// <summary>
+        /// Retrieves a preview of the document by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the document to preview.</param>
+        /// <returns>An IActionResult containing the document preview.</returns>
         [HttpGet("{id}/preview")]
         public async Task<IActionResult> GetDocumentPreview(int id)
         {
@@ -114,7 +147,13 @@ namespace DocumentManagementApp.Controllers
         }
 
         // GET api/documents/{id}/download
+        /// <summary>
+        /// Downloads a document by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the document to download.</param>
+        /// <returns>An IActionResult containing the document file.</returns>
         [HttpGet("{id}/download")]
+
         public async Task<IActionResult> DownloadDocument(int id)
         {
             var document = _documentService.GetDocumentById(id);
@@ -126,6 +165,11 @@ namespace DocumentManagementApp.Controllers
             // Increment the download count
             _documentRepository.IncrementDownloadCount(id);
 
+            if (string.IsNullOrEmpty(document.FilePath))
+            {
+                return NotFound();
+            }
+
             var fileBytes = await _blobStorageService.GetDocumentBytes(document.FilePath);
 
             if (fileBytes == null)
@@ -133,7 +177,7 @@ namespace DocumentManagementApp.Controllers
                 return NotFound();
             }
 
-            var mimeType = GetMimeTypeFromFileName(document.FileName);
+            var mimeType = document.FileName != null ? GetMimeTypeFromFileName(document.FileName) : "application/octet-stream";
 
             var stream = new MemoryStream(fileBytes);
             return new FileStreamResult(stream, mimeType)
@@ -141,8 +185,14 @@ namespace DocumentManagementApp.Controllers
                 FileDownloadName = document.FileName
             };
         }
+         // GET api/documents/{id}/download-count
+        /// <summary>
+        /// Retrieves the download count for a document by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the document.</param>
+        /// <returns>An IActionResult containing the download count.</returns>
+       
 
-        // GET api/documents/{id}/download-count
         [HttpGet("{id}/download-count")]
         public IActionResult GetDownloadCount(int id)
         {
@@ -151,6 +201,13 @@ namespace DocumentManagementApp.Controllers
         }
 
         // GET api/documents/{id}/share
+        /// <summary>
+        /// Generates a share link for a document by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the document.</param>
+        /// <param name="validForHours">The number of hours the share link is valid for.</param>
+        /// <param name="shareLinkExpiresInHours">The number of hours until the share link expires.</param>
+        /// <returns>An IActionResult containing the share link.</returns>
         [HttpGet("{id}/share")]
         public async Task<IActionResult> GetDocumentShareLink(int id, [FromQuery] int validForHours = 1, [FromQuery] int shareLinkExpiresInHours = 1)
         {

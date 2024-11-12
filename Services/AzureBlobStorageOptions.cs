@@ -1,12 +1,18 @@
 namespace DocumentManagementApp.Services
 {
-    // Class representing the options for Azure Blob Storage
+    /// <summary>
+    /// Represents the configuration options for Azure Blob Storage.
+    /// </summary>
     public class AzureBlobStorageOptions
     {
-        // Connection string for Azure Blob Storage
+        /// <summary>
+        /// Gets or sets the connection string for Azure Blob Storage.
+        /// </summary>
         public string? ConnectionString { get; set; }
 
-        // Container name for Azure Blob Storage
+        /// <summary>
+        /// Gets or sets the container name for Azure Blob Storage.
+        /// </summary>
         public string? ContainerName { get; set; }
     }
 }

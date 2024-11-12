@@ -8,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace DocumentLibrary2.Migrations
+namespace DocumentManagementApi.Migrations
 {
     [DbContext(typeof(DataContext))]
     partial class DataContextModelSnapshot : ModelSnapshot
@@ -17,7 +17,7 @@ namespace DocumentLibrary2.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.5")
+                .HasAnnotation("ProductVersion", "8.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -51,6 +51,9 @@ namespace DocumentLibrary2.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
+                    b.Property<byte[]>("PreviewData")
+                        .HasColumnType("bytea");
+
                     b.Property<DateTimeOffset?>("SasExpirationTime")
                         .HasColumnType("timestamp with time zone");
 
@@ -66,7 +69,7 @@ namespace DocumentLibrary2.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Documents");
+                    b.ToTable("Documents", (string)null);
                 });
 #pragma warning restore 612, 618
         }

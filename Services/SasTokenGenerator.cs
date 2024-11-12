@@ -7,12 +7,21 @@ using System.Threading.Tasks;
 
 namespace DocumentManagementApp.Services
 {
+    /// <summary>
+    /// Generates SAS tokens for accessing documents in Azure Blob Storage.
+    /// </summary>
     public class SASTokenGenerator
     {
         private readonly string _connectionString;
-        private readonly string _containerName;
+        private readonly string _containerName = string.Empty;
         private readonly DataContext _dbContext;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SASTokenGenerator"/> class.
+        /// </summary>
+        /// <param name="connectionString">The connection string to the Azure Blob Storage account.</param>
+        /// <param name="containerName">The name of the container in Azure Blob Storage.</param>
+        /// <param name="dbContext">The database context for accessing document data.</param>
         public SASTokenGenerator(string connectionString, string containerName, DataContext dbContext)
         {
             _connectionString = connectionString;
@@ -21,10 +30,23 @@ namespace DocumentManagementApp.Services
         }
 
         // Generates a SAS token for the specified document ID with the given validity period and share link expiration
-        public async Task<SasTokenResult> GenerateSasToken(int documentId, TimeSpan validFor, TimeSpan shareLinkExpiration)
+        /// <summary>
+        /// Generates a SAS token for the specified document ID with the given validity period and share link expiration.
+        /// </summary>
+        /// <param name="documentId">The ID of the document.</param>
+        /// <param name="validFor">The validity period of the SAS token.</param>
+        /// <param name="shareLinkExpiration">The expiration time for the share link.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the SAS token result.</returns>
+        public async Task<SasTokenResult?> GenerateSasToken(int documentId, TimeSpan validFor, TimeSpan shareLinkExpiration)
         {
             // Retrieve the document from the database
-            var document = await _dbContext.Documents.FirstOrDefaultAsync(d => d.Id == documentId);
+            var documents = _dbContext.Documents;
+            if (documents == null)
+            {
+                return null;
+            }
+
+            var document = await documents.FirstOrDefaultAsync(d => d.Id == documentId);
             if (document == null)
             {
                 return null;
@@ -61,7 +83,7 @@ namespace DocumentManagementApp.Services
             {
                 Token = sasToken.ToString(),
                 ExpirationTime = DateTimeOffset.UtcNow.Add(validFor),
-                ShareLink = GenerateShareLink(document.FileName, shareLinkExpiration)
+                ShareLink = document.FileName != null ? GenerateShareLink(document.FileName, shareLinkExpiration) : string.Empty
             };
         }
 
@@ -93,10 +115,22 @@ namespace DocumentManagementApp.Services
     }
 
     // Represents the result of generating a SAS token
+    /// <summary>
+    /// Represents the result of generating a SAS token.
+    /// </summary>
     public class SasTokenResult
     {
-        public string Token { get; set; }
-        public DateTimeOffset ExpirationTime { get; set; }
-        public string ShareLink { get; set; }
+        /// <summary>
+        /// Gets or sets the SAS token.
+        /// </summary>
+        public string Token { get; set; } = string.Empty;
+        /// <summary>
+        /// Gets or sets the expiration time of the SAS token.
+        /// </summary>
+        public DateTimeOffset ExpirationTime { get; set; } = DateTimeOffset.MinValue;
+        /// <summary>
+        /// Gets or sets the share link.
+        /// </summary>
+        public string ShareLink { get; set; } = string.Empty;
     }
 }

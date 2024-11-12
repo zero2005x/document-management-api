@@ -11,12 +11,21 @@ using ImageMagick;
 
 namespace DocumentManagementApp.Services
 {
+    /// <summary>
+    /// Provides services for managing documents, including retrieval, upload, deletion, preview generation, and link generation.
+    /// </summary>
     public class DocumentService
     {
         private readonly DocumentRepository _documentRepository;
         private readonly IAzureBlobStorageService _blobStorageService;
         private readonly SASTokenGenerator _sasTokenGenerator;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DocumentService"/> class.
+        /// </summary>
+        /// <param name="documentRepository">The repository for document metadata operations.</param>
+        /// <param name="blobStorageService">The service for interacting with Azure Blob Storage.</param>
+        /// <param name="sasTokenGenerator">The generator for SAS tokens.</param>
         public DocumentService(DocumentRepository documentRepository, IAzureBlobStorageService blobStorageService, SASTokenGenerator sasTokenGenerator)
         {
             _documentRepository = documentRepository;
@@ -24,7 +33,10 @@ namespace DocumentManagementApp.Services
             _sasTokenGenerator = sasTokenGenerator;
         }
 
-        // Retrieves the list of documents from the repository
+        /// <summary>
+        /// Retrieves the list of all documents, setting their file types based on their extensions and ordering them by upload date in descending order.
+        /// </summary>
+        /// <returns>A list of <see cref="Document"/> objects.</returns>
         public List<Document> GetDocuments()
         {
             var documents = _documentRepository.GetDocuments();
@@ -32,13 +44,23 @@ namespace DocumentManagementApp.Services
             // Iterate through the documents and set the FileType property based on the file extension
             foreach (var document in documents)
             {
-                document.FileType = GetFileTypeFromExtension(document.FileName);
+                if (!string.IsNullOrEmpty(document.FileName))
+                {
+                    document.FileType = GetFileTypeFromExtension(document.FileName);
+                }
             }
 
             return documents.OrderByDescending(d => d.UploadDateTime).ToList(); // Sort the documents by UploadDateTime in descending order
         }
 
-        // Uploads a document to the app
+        /// <summary>
+        /// Uploads a new document to the application, saving its metadata and the file itself to Azure Blob Storage.
+        /// </summary>
+        /// <param name="file">The file to be uploaded.</param>
+        /// <param name="name">The name of the document.</param>
+        /// <returns>The ID of the newly uploaded document.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided file is null or empty.</exception>
+        /// <exception cref="Exception">Thrown when inserting the document metadata or generating the SAS token fails.</exception>
         public async Task<int> UploadDocument(IFormFile file, string name)
         {
             if (file == null || file.Length == 0)
@@ -93,38 +115,10 @@ namespace DocumentManagementApp.Services
             return documentId;
         }
 
-        // Saves the document to Azure Blob Storage
-        private async Task<string> SaveDocument(IFormFile file, string fileName, string sasToken)
-        {
-            // Save the document to Azure Blob Storage using the provided file and SAS token
-            return await _blobStorageService.SaveDocument(file, fileName, sasToken);
-        }
-
-        // Retrieves the file type based on the file extension
-        private string GetFileTypeFromExtension(string fileName)
-        {
-            var extension = Path.GetExtension(fileName)?.ToLowerInvariant();
-            switch (extension)
-            {
-                case ".pdf":
-                    return "application/pdf";
-                case ".png":
-                    return "image/png";
-                case ".jpg":
-                case ".jpeg":
-                    return "image/jpeg";
-                case ".docx":
-                    return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-                case ".xlsx":
-                    return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                case ".pptx":
-                    return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-                default:
-                    return "application/octet-stream";
-            }
-        }
-
-        // Deletes a document from the app
+        /// <summary>
+        /// Deletes a document from the application, removing it from both Azure Blob Storage and the repository.
+        /// </summary>
+        /// <param name="id">The ID of the document to delete.</param>
         public void DeleteDocument(int id)
         {
             var document = _documentRepository.GetDocumentById(id);
@@ -141,7 +135,11 @@ namespace DocumentManagementApp.Services
             }
         }
 
-        // Retrieves the document preview data
+        /// <summary>
+        /// Retrieves the preview data for a specified document, supporting various file types.
+        /// </summary>
+        /// <param name="id">The ID of the document.</param>
+        /// <returns>A <see cref="DocumentPreview"/> object containing preview data, or <c>null</c> if not available.</returns>
         public async Task<DocumentPreview?> GetDocumentPreview(int id)
         {
             var supportedFileTypes = new List<string>
@@ -181,32 +179,11 @@ namespace DocumentManagementApp.Services
             return null;
         }
 
-        // Extracts the first page from a PDF document
-        private async Task<byte[]> ExtractFirstPageFromPdf(byte[] pdfData)
-        {
-            using (var inputStream = new MemoryStream(pdfData))
-            {
-                using (var outputStream = new MemoryStream())
-                {
-                    using (var image = new MagickImage())
-                    {
-                        // Read the PDF data into the MagickImage object
-                        image.Read(inputStream);
-
-                        // Set the output format to PNG
-                        image.Format = MagickFormat.Png;
-
-                        // Extract the first page and write it to the output stream
-                        image.Write(outputStream);
-                    }
-
-                    // Return the resulting image data
-                    return outputStream.ToArray();
-                }
-            }
-        }
-
-        // Generates a secure download link for a document
+        /// <summary>
+        /// Generates a secure download link for a specified document.
+        /// </summary>
+        /// <param name="id">The ID of the document.</param>
+        /// <returns>A secure download link as a string, or <c>null</c> if the document does not exist.</returns>
         public async Task<string?> GetDocumentDownloadLink(int id)
         {
             var document = _documentRepository.GetDocumentById(id);
@@ -219,7 +196,12 @@ namespace DocumentManagementApp.Services
             return null;
         }
 
-        // Generates a share link for a document
+        /// <summary>
+        /// Generates a shareable link for a specified document that is valid for a given duration.
+        /// </summary>
+        /// <param name="id">The ID of the document.</param>
+        /// <param name="validFor">The time span for which the share link is valid.</param>
+        /// <returns>A shareable link as a string, or <c>null</c> if the document does not exist.</returns>
         public async Task<string?> GetDocumentShareLink(int id, TimeSpan validFor)
         {
             var document = _documentRepository.GetDocumentById(id);
@@ -233,7 +215,16 @@ namespace DocumentManagementApp.Services
             return null;
         }
 
-        // Generates a share link for a document with specified validity
+        /// <summary>
+        /// Generates a shareable link along with its token and expiration time for a specified document.
+        /// </summary>
+        /// <param name="id">The ID of the document.</param>
+        /// <param name="validForHours">The number of hours the SAS token is valid for.</param>
+        /// <param name="shareLinkExpiresInHours">The number of hours the share link remains valid.</param>
+        /// <returns>
+        /// A tuple containing the SAS token, its expiration time, and the share link, or <c>null</c> if the document does not exist.
+        /// </returns>
+        /// <exception cref="ArgumentException">Thrown when the validity durations are out of the allowed range.</exception>
         public async Task<(string Token, DateTimeOffset ExpirationTime, string ShareLink)?> GenerateDocumentShareLink(int id, int validForHours, int shareLinkExpiresInHours)
         {
             if (validForHours < 1 || validForHours > 24 || shareLinkExpiresInHours < 1 || shareLinkExpiresInHours > 24)
@@ -249,19 +240,104 @@ namespace DocumentManagementApp.Services
             {
                 // Generate the share link using the SASTokenGenerator
                 var sasTokenResult = await _sasTokenGenerator.GenerateSasToken(document.Id, validFor, shareLinkExpiration);
+                if (sasTokenResult == null)
+                {
+                    throw new Exception($"Failed to generate SAS token for document with ID: {id}.");
+                }
                 return (sasTokenResult.Token, sasTokenResult.ExpirationTime, sasTokenResult.ShareLink);
             }
 
             return null;
         }
 
-        // Retrieves a document by ID from the repository
+        /// <summary>
+        /// Retrieves a document by its ID from the repository.
+        /// </summary>
+        /// <param name="id">The ID of the document.</param>
+        /// <returns>The <see cref="Document"/> object if found; otherwise, <c>null</c>.</returns>
         public Document GetDocumentById(int id)
         {
             return _documentRepository.GetDocumentById(id);
         }
 
-        // Removes invalid characters from a file name
+        /// <summary>
+        /// Saves a document to Azure Blob Storage.
+        /// </summary>
+        /// <param name="file">The file to be saved.</param>
+        /// <param name="fileName">The name to assign to the file in storage.</param>
+        /// <param name="sasToken">The SAS token for authentication.</param>
+        /// <returns>The file path in Azure Blob Storage.</returns>
+        private async Task<string> SaveDocument(IFormFile file, string fileName, string sasToken)
+        {
+            // Save the document to Azure Blob Storage using the provided file and SAS token
+            return await _blobStorageService.SaveDocument(file, fileName, sasToken);
+        }
+
+        /// <summary>
+        /// Determines the MIME type of a file based on its extension.
+        /// </summary>
+        /// <param name="fileName">The name of the file.</param>
+        /// <returns>The MIME type as a string.</returns>
+        private string GetFileTypeFromExtension(string fileName)
+        {
+            var extension = Path.GetExtension(fileName)?.ToLowerInvariant();
+            switch (extension)
+            {
+                case ".pdf":
+                    return "application/pdf";
+                case ".png":
+                    return "image/png";
+                case ".jpg":
+                case ".jpeg":
+                    return "image/jpeg";
+                case ".docx":
+                    return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+                case ".xlsx":
+                    return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                case ".pptx":
+                    return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+                default:
+                    return "application/octet-stream";
+            }
+        }
+
+        /// <summary>
+        /// Extracts the first page from a PDF document and converts it to a PNG image.
+        /// </summary>
+        /// <param name="pdfData">The byte array representing the PDF document.</param>
+        /// <returns>A byte array of the first page as a PNG image.</returns>
+        private async Task<byte[]> ExtractFirstPageFromPdf(byte[] pdfData)
+        {
+            return await Task.Run(() =>
+            {
+                using (var inputStream = new MemoryStream(pdfData))
+                {
+                    using (var outputStream = new MemoryStream())
+                    {
+                        using (var image = new MagickImage())
+                        {
+                            // Read the PDF data into the MagickImage object
+                            image.Read(inputStream);
+
+                            // Set the output format to PNG
+                            image.Format = MagickFormat.Png;
+
+                            // Extract the first page and write it to the output stream
+                            image.Write(outputStream);
+                        }
+
+                        // Return the resulting image data
+                        return outputStream.ToArray();
+                    }
+                }
+            });
+        }
+
+        /// <summary>
+        /// Removes invalid characters from a file name, replacing them with underscores.
+        /// </summary>
+        /// <param name="fileName">The original file name.</param>
+        /// <returns>A sanitized file name with invalid characters removed.</returns>
         private string RemoveInvalidFileNameCharacters(string fileName)
         {
             var invalidChars = Path.GetInvalidFileNameChars();
