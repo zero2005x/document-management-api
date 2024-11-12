@@ -40,6 +40,7 @@ namespace DocumentManagementApp.Data
                       .HasColumnType("integer");
 
                 entity.Property(e => e.FileName)
+                      .IsRequired()
                       .HasColumnType("text");
 
                 entity.Property(e => e.FilePath)
@@ -63,9 +64,6 @@ namespace DocumentManagementApp.Data
 
                 entity.Property(e => e.ShareLink)
                       .HasColumnType("text");
-
-                entity.Property(e => e.UploadDateTime)
-                      .HasColumnType("timestamp with time zone");
 
                 entity.Property(e => e.PreviewData)
                       .HasColumnType("bytea");
